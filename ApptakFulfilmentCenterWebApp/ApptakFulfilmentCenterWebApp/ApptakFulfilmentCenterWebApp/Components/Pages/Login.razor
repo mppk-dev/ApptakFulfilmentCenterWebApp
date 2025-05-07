@@ -1,0 +1,163 @@
+﻿@page "/"
+@layout ApptakFulfilmentCenterWebApp.Components.Layout.Auth
+@inject IJSRuntime JS
+
+<div class="hold-transition login-page">
+    <div class="login-box">
+        <!-- /.login-logo -->
+        <div class="card card-outline card-primary">
+            <div class="card-header text-center">
+                @* <a href="../../index2.html" class="h1"><b>Admin</b>LTE</a> *@
+                @* <a class="h1"><b>AppTak</b></a> *@
+                @* <h1><b>AppTak</b></h1> *@
+                <img src="Assets/images/AppTaklogo.png" alt="AppTak Logo" class="img-fluid" style="max-height: 150px;" />
+            </div>
+            <div class="card-body">
+                <p class="login-box-msg">Sign in to start your session</p>
+
+                <EditForm Model="@taUsersAdmin" OnValidSubmit="HandleLogin" FormName="LoginForm">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" @bind-value="taUsersAdmin.Email" placeholder="Email">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-envelope"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="password" class="form-control" @bind-value="taUsersAdmin.Password" placeholder="Password">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="icheck-primary" style="display: none;">
+                                <input type="checkbox" id="remember">
+                                <label for="remember">
+                                    Remember Me
+                                </label>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                </EditForm>
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <p class="text-danger">@errorMessage</p>
+                }
+                @* <form action="../../index3.html" method="post" Model="@taUsersAdmin" OnValidSubmit="HandleLogin">
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" @bind-Value="taUsersAdmin.Email" placeholder="Email">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-envelope"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="password" class="form-control" placeholder="Password">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="icheck-primary" style="display: none;">
+                                <input type="checkbox" id="remember">
+                                <label for="remember">
+                                    Remember Me
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                        </div>
+                    </div>
+                </form> *@
+
+                <p class="mb-1">
+                    <a href="forgotpassword">I forgot my password</a>
+                </p>
+                <p class="mb-0">
+                    <a href="signup" class="text-center">Register a new membership</a>
+                </p>
+            </div>
+            <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+    </div>
+</div>
+
+@code {
+    private TaUsersAdmin taUsersAdmin = new();
+    private string errorMessage;
+    private bool showToast;
+    private string toastType, toastMessage, toastTitle;
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender)
+    //     {
+    //         await ShowToastr("info", "Page Loaded Successfully", "Info");
+    //     }
+    // }
+
+    private async Task ShowToastr(string type, string message, string title = "")
+    {
+        await JS.InvokeVoidAsync("showToastr", type, message, title);
+    }
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            Console.WriteLine("HandleLogin called");
+            if (string.IsNullOrWhiteSpace(taUsersAdmin.Email))
+            {
+                await ShowToastr("error", "Email is required", "Login Failed");
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(taUsersAdmin.Password))
+            {
+                await ShowToastr("error", "Password is required", "Login Failed");
+                return;
+            }
+
+            var user = await _context.TaUsersAdmins
+            //.FirstAsync(u => u.Email == taUsersAdmin.Email/* && u.Password == taUsersAdmin.Password */);
+             .FirstOrDefaultAsync(u => u.Email == taUsersAdmin.Email/* && u.Password == taUsersAdmin.Password */);
+
+            if (user != null)
+            {
+                // Successful login (Redirect or set session/token)
+                Navigation.NavigateTo("/home");
+            }
+            else
+            {
+                await ShowToastr("warning", "Invalid username or password.", "Login Failed");
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.Error.WriteLine($"[InvalidOperationException] {ex.Message}");
+            await ShowToastr("error", "A system error occurred. Please try again later.", "Error");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[Exception] {ex.Message}");
+            await ShowToastr("error", "Something went wrong. Please try again.", "Error");
+        }
+
+    }
+}
