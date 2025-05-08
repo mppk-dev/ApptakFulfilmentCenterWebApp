@@ -1,4 +1,7 @@
 ﻿@page "/"
+@using System.Security.Cryptography
+@using System.Text
+@using ApptakFulfilmentCenterWebApp.Components.Layout
 @layout ApptakFulfilmentCenterWebApp.Components.Layout.Auth
 @inject IJSRuntime JS
 
@@ -7,9 +10,6 @@
         <!-- /.login-logo -->
         <div class="card card-outline card-primary">
             <div class="card-header text-center">
-                @* <a href="../../index2.html" class="h1"><b>Admin</b>LTE</a> *@
-                @* <a class="h1"><b>AppTak</b></a> *@
-                @* <h1><b>AppTak</b></h1> *@
                 <img src="Assets/images/AppTaklogo.png" alt="AppTak Logo" class="img-fluid" style="max-height: 150px;" />
             </div>
             <div class="card-body">
@@ -50,42 +50,20 @@
                         <!-- /.col -->
                     </div>
                 </EditForm>
-                @if (!string.IsNullOrEmpty(errorMessage))
+
+                <!-- Loader Overlay -->
+                @if (isLoading)
+                {
+                    <div class="overlay-loader">
+                        <LogoLoader />
+                    </div>
+                }
+
+                @* @if (!string.IsNullOrEmpty(errorMessage))
                 {
                     <p class="text-danger">@errorMessage</p>
-                }
-                @* <form action="../../index3.html" method="post" Model="@taUsersAdmin" OnValidSubmit="HandleLogin">
-                    <div class="input-group mb-3">
-                        <input type="email" class="form-control" @bind-Value="taUsersAdmin.Email" placeholder="Email">
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-envelope"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="input-group mb-3">
-                        <input type="password" class="form-control" placeholder="Password">
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-lock"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-8">
-                            <div class="icheck-primary" style="display: none;">
-                                <input type="checkbox" id="remember">
-                                <label for="remember">
-                                    Remember Me
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
-                        </div>
-                    </div>
-                </form> *@
-
+                } *@
+                
                 <p class="mb-1">
                     <a href="forgotpassword">I forgot my password</a>
                 </p>
@@ -104,6 +82,7 @@
     private string errorMessage;
     private bool showToast;
     private string toastType, toastMessage, toastTitle;
+    private bool isLoading = false;
 
     // protected override async Task OnAfterRenderAsync(bool firstRender)
     // {
@@ -120,6 +99,7 @@
 
     private async Task HandleLogin()
     {
+        isLoading = true;
         try
         {
             Console.WriteLine("HandleLogin called");
@@ -134,9 +114,10 @@
                 return;
             }
 
+            string UserHashPass = Encrypt_admin(taUsersAdmin.Password);
+
             var user = await _context.TaUsersAdmins
-            //.FirstAsync(u => u.Email == taUsersAdmin.Email/* && u.Password == taUsersAdmin.Password */);
-             .FirstOrDefaultAsync(u => u.Email == taUsersAdmin.Email/* && u.Password == taUsersAdmin.Password */);
+                                     .FirstOrDefaultAsync(u => u.Email == taUsersAdmin.Email && u.Password == UserHashPass);
 
             if (user != null)
             {
@@ -158,6 +139,66 @@
             Console.Error.WriteLine($"[Exception] {ex.Message}");
             await ShowToastr("error", "Something went wrong. Please try again.", "Error");
         }
+        finally
+        {
+            isLoading = false;
+        }
+    }
 
+    public string Encrypt_admin(string sPainText)
+    {
+        // string sKey = Session["sUser_Code"].ToString();
+        string sKey = "920000050277";
+        if (sPainText.Length == 0)
+            return (sPainText);
+        return (EncryptString(sPainText, sKey));
+    }
+
+    public string EncryptString(string InputText, string Password)
+    {
+        // "Password" string variable is nothing but the key(your secret key) value which is sent from the front end.
+        // "InputText" string variable is the actual password sent from the login page.
+        // We are now going to create an instance of the
+        // Rihndael class.
+        RijndaelManaged RijndaelCipher = new RijndaelManaged();
+        // First we need to turn the input strings into a byte array.
+        byte[] PlainText = System.Text.Encoding.Unicode.GetBytes(InputText);
+        // We are using Salt to make it harder to guess our key
+        // using a dictionary attack.
+        byte[] Salt = Encoding.ASCII.GetBytes(Password.Length.ToString());
+        // The (Secret Key) will be generated from the specified
+        // password and Salt.
+        //PasswordDeriveBytes -- It Derives a key from a password
+        PasswordDeriveBytes SecretKey = new PasswordDeriveBytes(Password, Salt);
+        // Create a encryptor from the existing SecretKey bytes.
+        // We use 32 bytes for the secret key
+        // (the default Rijndael key length is 256 bit = 32 bytes) and
+        // then 16 bytes for the IV (initialization vector),
+        // (the default Rijndael IV length is 128 bit = 16 bytes)
+        ICryptoTransform Encryptor = RijndaelCipher.CreateEncryptor(SecretKey.GetBytes(16), SecretKey.GetBytes(16));
+        // Create a MemoryStream that is going to hold the encrypted bytes
+        MemoryStream memoryStream = new MemoryStream();
+        // Create a CryptoStream through which we are going to be processing our data.
+        // CryptoStreamMode.Write means that we are going to be writing data
+        // to the stream and the output will be written in the MemoryStream
+        // we have provided. (always use write mode for encryption)
+        CryptoStream cryptoStream = new CryptoStream(memoryStream, Encryptor, CryptoStreamMode.Write);
+        // Start the encryption process.
+        cryptoStream.Write(PlainText, 0, PlainText.Length);
+        // Finish encrypting.
+        cryptoStream.FlushFinalBlock();
+        // Convert our encrypted data from a memoryStream into a byte array.
+        byte[] CipherBytes = memoryStream.ToArray();
+        // Close both streams.
+        memoryStream.Close();
+        cryptoStream.Close();
+        // Convert encrypted data into a base64-encoded string.
+        // A common mistake would be to use an Encoding class for that.
+        // It does not work, because not all byte values can be
+        // represented by characters. We are going to be using Base64 encoding
+        // That is designed exactly for what we are trying to do.
+        string EncryptedData = Convert.ToBase64String(CipherBytes);
+        // Return encrypted string.
+        return EncryptedData;
     }
 }
