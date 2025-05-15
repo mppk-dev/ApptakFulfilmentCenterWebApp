@@ -1,9 +1,11 @@
 ﻿@page "/"
 @using System.Security.Cryptography
 @using System.Text
+@using System.Text.RegularExpressions;
 @using ApptakFulfilmentCenterWebApp.Components.Layout
 @layout ApptakFulfilmentCenterWebApp.Components.Layout.Auth
 @inject IJSRuntime JS
+@inject ProtectedSessionStorage sessionStorage
 
 <div class="hold-transition login-page">
     <div class="login-box">
@@ -63,7 +65,7 @@
                 {
                     <p class="text-danger">@errorMessage</p>
                 } *@
-                
+
                 <p class="mb-1">
                     <a href="forgotpassword">I forgot my password</a>
                 </p>
@@ -114,13 +116,15 @@
                 return;
             }
 
-            string UserHashPass = Encrypt_admin(taUsersAdmin.Password);
+            string UserPasswordKey = UserPassKey(taUsersAdmin.Email);
+            string UserHashPass = Encrypt_admin(UserPasswordKey, taUsersAdmin.Password);
 
             var user = await _context.TaUsersAdmins
                                      .FirstOrDefaultAsync(u => u.Email == taUsersAdmin.Email && u.Password == UserHashPass);
 
             if (user != null)
             {
+                await sessionStorage.SetAsync("UserName", $"{user.FirstName} {user.LastName}"); // Adjust property as needed
                 // Successful login (Redirect or set session/token)
                 Navigation.NavigateTo("/home");
             }
@@ -145,10 +149,11 @@
         }
     }
 
-    public string Encrypt_admin(string sPainText)
+    public string Encrypt_admin(string sKey, string sPainText)
     {
         // string sKey = Session["sUser_Code"].ToString();
-        string sKey = "920000050277";
+        //string sKey = "920000050277";
+        sKey = "920000050277";
         if (sPainText.Length == 0)
             return (sPainText);
         return (EncryptString(sPainText, sKey));
@@ -200,5 +205,18 @@
         string EncryptedData = Convert.ToBase64String(CipherBytes);
         // Return encrypted string.
         return EncryptedData;
+    }
+
+    public string UserPassKey(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
+            return string.Empty;
+
+        var usernamePart = email.Split('@')[0];
+
+        // Remove all non-alphanumeric characters
+        var cleanedUsername = Regex.Replace(usernamePart, "[^a-zA-Z0-9]", "");
+
+        return cleanedUsername;
     }
 }

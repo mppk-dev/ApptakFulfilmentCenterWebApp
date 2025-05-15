@@ -29,4 +29,6 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+//app.MapFallbackToPage("/App.razor");
+app.UseStatusCodePagesWithRedirects("/404");
 app.Run();
