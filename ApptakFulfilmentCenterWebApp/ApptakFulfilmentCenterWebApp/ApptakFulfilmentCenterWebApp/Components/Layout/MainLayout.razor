@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+﻿@* @inherits LayoutComponentBase
 
 <div class="page">
     <div class="sidebar">
@@ -15,4 +15,88 @@
         </article>
     </main>
 </div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div> *@
+@inherits LayoutComponentBase
+    
+<style>
+    /* .bb-sidebar-top-row{
+        background-color: dimgrey !important; 
+    } */
+</style>
+
+<div class="bb-page">
+
+    <Sidebar Href="/index"
+             IconName="IconName.BootstrapFill"
+             Title="Apptak Admin"
+             DataProvider="SidebarDataProvider" />
+
+    <main>
+        <div class="bb-top-row px-4 d-flex justify-content-end">
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        </div>
+
+        <article class="content px-4">
+            <div class="py-2">@Body</div>
+        </article>
+    </main>
+
+</div>
+
+@code {
+    IEnumerable<NavItem> navItems;
+
+    private async Task<SidebarDataProviderResult> SidebarDataProvider(SidebarDataProviderRequest request)
+    {
+        if (navItems is null)
+            navItems = GetNavItems();
+
+        return await Task.FromResult(request.ApplyTo(navItems));
+    }
+
+    private IEnumerable<NavItem> GetNavItems()
+    {
+        navItems = new List<NavItem>
+        {
+            new NavItem { Id = "1", Href = "/getting-started", IconName = IconName.HouseDoorFill, Text = "Getting Started"},
+
+            new NavItem { Id = "2", IconName = IconName.LayoutSidebarInset, Text = "Content", IconColor = IconColor.Primary },
+            new NavItem { Id = "3", Href = "/icons", IconName = IconName.PersonSquare, Text = "Icons", ParentId="2"},
+
+            new NavItem { Id = "4", IconName = IconName.ExclamationTriangleFill, Text = "Components", IconColor = IconColor.Success },
+            new NavItem { Id = "5", Href = "/alerts", IconName = IconName.CheckCircleFill, Text = "Alerts", ParentId="4"},
+            new NavItem { Id = "6", Href = "/breadcrumb", IconName = IconName.SegmentedNav, Text = "Breadcrumb", ParentId="4"},
+            new NavItem { Id = "7", Href = "/sidebar", IconName = IconName.LayoutSidebarInset, Text = "Sidebar", ParentId="4"},
+
+            new NavItem { Id = "8", IconName = IconName.WindowPlus, Text = "Forms", IconColor = IconColor.Danger },
+            new NavItem { Id = "9", Href = "/autocomplete", IconName = IconName.InputCursorText, Text = "Auto Complete", ParentId="8"},
+            new NavItem { Id = "10", Href = "/currency-input", IconName = IconName.CurrencyDollar, Text = "Currency Input", ParentId="8"},
+            new NavItem { Id = "11", Href = "/number-input", IconName = IconName.InputCursor, Text = "Number Input", ParentId="8"},
+            new NavItem { Id = "12", Href = "/switch", IconName = IconName.ToggleOn, Text = "Switch", ParentId="8"},
+
+            new NavItem { Id = "13", IconName = IconName.WindowPlus, Text = "Others", IconColor = IconColor.Dark },
+            new NavItem { Id = "14", Href = "/counter", IconName = IconName.InputCursorText, Text = "Counter", ParentId="13"},
+            new NavItem { Id = "15", Href = "/weather", IconName = IconName.CurrencyDollar, Text = "Weather", ParentId="13"},
+            new NavItem { Id = "16", Href = "/Error", IconName = IconName.CurrencyDollar, Text = "Error", ParentId="13"},
+            new NavItem { Id = "17", Href = "/404", IconName = IconName.CurrencyDollar, Text = "Error", ParentId="13"},
+            
+        };
+
+        return navItems;
+    }
+}
+
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+<Toasts class="p-3" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
 

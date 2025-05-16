@@ -8,8 +8,12 @@
 @using Microsoft.JSInterop
 @using ApptakFulfilmentCenterWebApp
 @using ApptakFulfilmentCenterWebApp.Components
-@using ApptakFulfilmentCenterWebApp.Models
+@using BlazorBootstrap;
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inject NavigationManager Navigation
+@using ApptakFulfilmentCenterWebApp.Models
+@using System.ComponentModel.DataAnnotations
 @inject ApplicationDbContext _context
 @using Microsoft.EntityFrameworkCore
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using ApptakFulfilmentCenterWebApp.Business.Services.AuthService
+@using ApptakFulfilmentCenterWebApp.Models.Dto
