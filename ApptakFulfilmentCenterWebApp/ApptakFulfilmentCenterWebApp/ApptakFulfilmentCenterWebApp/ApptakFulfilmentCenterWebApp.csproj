@@ -7,18 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
+    <Content Include="Business\Repositories\AuthRepository\AuthRepo.cs" />
+    <Content Include="Business\Repositories\AuthRepository\IAuthRepo.cs" />
+    <Content Include="Business\Services\AuthService\AuthService.cs" />
+    <Content Include="Business\Services\AuthService\IAuthService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\NewFolder\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.15" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.15">
+    <PackageReference Include="Blazor.Bootstrap" Version="3.3.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.16">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.15" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.15">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.16" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.16">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

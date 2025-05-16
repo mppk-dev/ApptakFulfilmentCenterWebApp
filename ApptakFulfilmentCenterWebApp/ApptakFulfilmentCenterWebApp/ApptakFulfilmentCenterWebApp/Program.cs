@@ -1,8 +1,12 @@
+using ApptakFulfilmentCenterWebApp.Business.Repositories.AuthRepository;
+using ApptakFulfilmentCenterWebApp.Business.Services.AuthService; // Add this at the top if needed
 using ApptakFulfilmentCenterWebApp.Components;
+using ApptakFulfilmentCenterWebApp.Models;
 using Microsoft.EntityFrameworkCore;
-using ApptakFulfilmentCenterWebApp.Models; // Add this at the top if needed
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddBlazorBootstrap();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -10,6 +14,9 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("connection_string")));
+
+builder.Services.AddScoped<IAuthRepo, AuthRepo>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
